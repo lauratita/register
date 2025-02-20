@@ -1,4 +1,7 @@
+import 'package:register/dashboard/dashboard_page.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -8,121 +11,64 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _isObscured = true;
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  String errorMessage = '';
+
+  Future<void> _login() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? registeredUsername = prefs.getString('username');
+    String? registeredPassword = prefs.getString('password');
+
+    if (usernameController.text == registeredUsername &&
+        passwordController.text == registeredPassword) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardPage()),
+      );
+    } else {
+      setState(() {
+        errorMessage = 'Invalid username or password';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // logo / icon
-              const Icon(Icons.lock, size: 80, color: Colors.blueAccent),
-
-              const SizedBox(height: 20),
-
-              // text title
-              const Text(
-                "Welcome Back!",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 10),
-
-              // subtitle
-              const Text(
-                "Login to your account",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-
-              const SizedBox(height: 30),
-
-              // email input
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: "Email",
-                  prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // password input
-              TextField(
-                controller: _passwordController,
-                obscureText: _isObscured,
-                decoration: InputDecoration(
-                  labelText: "Password",
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _isObscured = !_isObscured;
-                      });
-                    },
-                    icon: Icon(
-                        _isObscured ? Icons.visibility_off : Icons.visibility),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // forgot password
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: const Text("Forgot Password?"),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // login button
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  "Login",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // signup redirect
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Don't have an account?"),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text("Sign Up"),
-                  ),
-                ],
-              ),
-            ],
-          ),
+      appBar: AppBar(
+        title: const Text("Login"),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: usernameController,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: "Username"),
+            ),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: "Password"),
+            ),
+            if (errorMessage.isNotEmpty)
+              Text(errorMessage, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 20),
+            ElevatedButton(onPressed: _login, child: const Text("Login")),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RegisterPage()),
+                );
+              },
+              child: const Text("Don't have an account? Register here"),
+            ),
+          ],
         ),
       ),
     );
